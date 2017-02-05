@@ -64,12 +64,13 @@ defmodule Checksum.Crc do
 
   def calc(%Crc{init: init, ref_in: ref_in, width: width} = params, data), do: calc(params, reflect(init, width, ref_in), data)
 
-  defp calc(%Crc{table: table, ref_in: ref_in, width: width, bits_mask: bits_mask} = params, last_crc, <<h, t :: binary>>) do
+  defp calc(%Crc{table: table, ref_in: ref_in, width: width} = params, last_crc, <<h, t :: binary>>) do
     {crc, index} = case ref_in do
        true ->  {last_crc >>> 8, last_crc ^^^ h}
        false -> {last_crc <<< 8, (last_crc >>> (width-8)) ^^^ h}
     end
-    calc(params, crc ^^^ Enum.at(table, index &&& 0xff), t)
+    new_crc = crc ^^^ Enum.at(table, index &&& 0xff)
+    calc(params, new_crc, t)
   end
 
   defp calc(%Crc{width: width, ref_in: ref_in, ref_out: ref_out, xor_out: xor_out, bits_mask: bits_mask}, crc, <<>>) do
