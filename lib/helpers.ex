@@ -13,7 +13,7 @@ defmodule Checksum.Helpers do
 
   @doc """
   Conditional Reorder the bits of a binary sequence, by reflecting them about the middle position.
-  If `bool` true the bits will be reflected, if it is false the input value will be returned. 
+  If `bool` is true the bits will be reflected, if it is false the input value will be returned.
 
   ## Examples
 
@@ -41,26 +41,26 @@ defmodule Checksum.Helpers do
   ## Examples
 
       iex> Checksum.Helpers.bits_mask(1) |> Integer.to_charlist(2)
-      '1' 
+      '1'
       iex> Checksum.Helpers.bits_mask(4) |> Integer.to_charlist(2)
-      '1111' 
+      '1111'
       iex> Checksum.Helpers.bits_mask(8) |> Integer.to_charlist(2)
-      '11111111' 
+      '11111111'
 
   """
   def bits_mask(width), do: (1 <<< width) - 1
 
   @doc """
-  Calculates a top bit mask. 
+  Calculates a top bit mask.
 
   ## Examples
 
       iex> Checksum.Helpers.top_bit(1) |> Integer.to_charlist(2)
-      '1' 
+      '1'
       iex> Checksum.Helpers.top_bit(4) |> Integer.to_charlist(2)
-      '1000' 
+      '1000'
       iex> Checksum.Helpers.top_bit(8) |> Integer.to_charlist(2)
-      '10000000' 
+      '10000000'
 
   """
   def top_bit(width), do: 1 <<< (width - 1)
