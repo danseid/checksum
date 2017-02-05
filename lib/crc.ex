@@ -22,13 +22,17 @@ defmodule Checksum.Crc do
     * `ref_out` -
 
   """
-  def init(width \\ 8, poly \\ 0x7, init \\ 0x0, xor_out \\ 0x0, ref_in \\ false, ref_out \\ false) do
+  def init(width, poly, init, xor_out, ref_in, ref_out) do
 
     %Crc{width: width, poly: poly, init: init, xor_out: xor_out, ref_in: ref_in, ref_out: ref_out}
     |> init_bits_mask
     |> init_top_bit
     |> init_crc_table
   end
+
+  def init(:crc_8), do: init(8, 0x07, 0x00, 0x00, false, false)
+  def init(:crc_16), do: init(16, 0x8005, 0x000, 0x000, true, true)
+  def init(:arc), do: init(:crc_16)
 
   defp init_bits_mask(%Crc{width: width} = crc_params),  do: %Crc{crc_params | bits_mask: bits_mask(width)}
   defp init_top_bit(%Crc{width: width} = crc_params),  do: %Crc{crc_params | top_bit: top_bit(width)}
@@ -57,4 +61,19 @@ defmodule Checksum.Crc do
       _ -> (remainder <<< 1) ^^^ poly
     end |> bitwise_calc(bit+1, top_bit, poly)
   end
+
+  def calc(%Crc{init: init, ref_in: ref_in, width: width} = params, data), do: calc(params, reflect(init, width, ref_in), data)
+
+  defp calc(%Crc{table: table, ref_in: ref_in, width: width, bits_mask: bits_mask} = params, last_crc, <<h, t :: binary>>) do
+    {crc, index} = case ref_in do
+       true ->  {last_crc >>> 8, last_crc ^^^ h}
+       false -> {last_crc <<< 8, (last_crc >>> (width-8)) ^^^ h}
+    end
+    calc(params, crc ^^^ Enum.at(table, index &&& 0xff), t)
+  end
+
+  defp calc(%Crc{width: width, ref_in: ref_in, ref_out: ref_out, xor_out: xor_out, bits_mask: bits_mask}, crc, <<>>) do
+    (reflect(crc, width, ref_in !== ref_out) ^^^ xor_out) &&& bits_mask
+  end
 end
+ 
